@@ -1,20 +1,43 @@
  package main
  import(
- "bufio"
+ //"bufio"
     "fmt"
     "log"
     "os"
     "strings"
     "time"
-    "strconv"
+    //"strconv"
     "regMaster/tools"
     "io/ioutil"
+    "encoding/json"
     )
+
+ type myObject struct{
+	Name string;
+	Adress string;
+	Zone int;
+	Ust float64;
+	RegInMonth int;
+	Index int
+	}
+	
+type dataReg struct {
+	Month int
+	FirstDay int
+	TotalObjects int
+	MyObjects []myObject
+	Grafik []int
+	Reglament [][]int
+	
+	}	
+
+
+
  var  allObject, //
 	  day, 
-      firstDay,//	  1st day of week 0-sun 1-mon...6-sat
+     // firstDay,//	  1st day of week 0-sun 1-mon...6-sat
 	  year,
-	  month,
+	 // month,
 	  modeMenu,
 	  modeComand,
 	  mode int
@@ -22,18 +45,12 @@ var  arhive bool
 var	  fileData, //= "data.dpm";
 	  filesDir,//,="arhive";
 	  fileArhive string
-var	  myObjects []myObject;
-var	  grafik [32]int
-var	  reglament [][]int
+//var	  myObjects []myObject;
+//var	  grafik [32]int
+//var	  reglament [][]int
 var   calendar time.Time
-	  
-  type myObject struct{
-	name string;
-	adress string;
-	zone int;
-	ust float64;
-	regInMonth int;
-	}
+var   gData dataReg	  
+ 
 	
 	
  func main(){
@@ -41,7 +58,7 @@ var   calendar time.Time
 	  modeComand=2;
 	  mode=modeComand;
 	 calendar=time.Now()
-	fileData="data.dpm"
+	  fileData="data.bin"
 	  filesDir="arhive"
 	  day=calendar.Day()
 	 var  monthN int
@@ -54,7 +71,7 @@ var   calendar time.Time
 	  typeLine();
 	  fmt.Println("Today ",day,monthN,year);
 	  
-	  if month+1 != monthN {
+	  if gData.Month+1 != monthN {
 		   fmt.Println ("database is out of date");
 		   }
 	  regByDay(day);
@@ -84,6 +101,7 @@ func initr(){
 		  if (v==1) {
 			  fmt.Println("enter the num of myObjects  ");
 		      allObject =tools.ReadInt();
+		      gData.TotalObjects=allObject
 		      makeArray()
 		      setAllObjects();
 		      setAllReglament();
@@ -94,14 +112,16 @@ func initr(){
 				}
 		} else {
 		readData(fileData)
+		
 		}
 	}	 
  
 func makeArray(){
-	myObjects=make([]myObject,allObject+5)
-	reglament=make([][]int,allObject+5)
+	gData.MyObjects=make([]myObject,allObject+5)
+	gData.Grafik=make([]int,32)
+	gData.Reglament=make([][]int,allObject+5)
 	for i:=0;i<allObject+5;i++{
-		reglament[i]=make([]int,32)
+		gData.Reglament[i]=make([]int,32)
 	 }
 	
 }
@@ -109,69 +129,21 @@ func makeArray(){
 
 
 
- func readData(nameFile string){
-	  ob:=0;
-	file, err := os.Open(nameFile)
+ func readData(fileData string) {
+	 file, err := os.Open(fileData)
+    if err != nil{
+        fmt.Println(err) 
+        os.Exit(1) 
+    }
+    defer file.Close() 
+    bytes, err := os.ReadFile(fileData);
     if err != nil {
-        log.Fatal(err)
-    }
-   
-	 
-	 scanner := bufio.NewScanner(file)
-	 for scanner.Scan() {
-        str:=(scanner.Text())
-        strs:=strings.Split(str," ")
-        if len(strs)>1 {
-			switch strs[0]{
-				case "month":
-					month, _ = strconv.Atoi(strs[1])
-			    case "firstDay":
-					firstDay, _ = strconv.Atoi(strs[1])
-				case "total_objects": {
-					allObject, _ = strconv.Atoi(strs[1])
-					makeArray()
-					}
-				case "index":
-					ob,_= strconv.Atoi(strs[1])
-				case "uslUst": {
-					u, _ := strconv.Atoi(strs[1])
-					myObjects[ob].ust=UstToFloat(u)
-					}	
-				case "zone":
-					myObjects[ob].zone, _ = strconv.Atoi(strs[1])
-				case "name":
-					myObjects[ob].name = strs[1]
-				case "adress":
-					myObjects[ob].adress= strs[1]
-				case "regInMonth":
-					myObjects[ob].regInMonth, _ = strconv.Atoi(strs[1])
-			}
-		}
-		if strs[0]=="Grafik" {
-			if scanner.Scan(){
-			str=(scanner.Text())
-			strg:=strings.Split(str," ")
-			for i:=0;i<len(grafik);i++{
-				grafik[i],_=strconv.Atoi(strg[i])
-				}
-			}
-		}
-		if strs[0]=="Reglament"{
-			for obj:=0;obj<len(reglament);obj++ {
-				 if scanner.Scan(){
-					str=(scanner.Text())
-			        strr:=strings.Split(str," ")
-				for d:=0;d<len(reglament[obj]);d++{
-					reglament[obj][d],_=strconv.Atoi(strr[d])
-					}
-				  }
-				}
-			
-			} 
-			 
-    }
-    file.Close()
-}
+     log.Fatal(err);
+     } else {
+		  _=json.Unmarshal(bytes, &gData)
+		  allObject=gData.TotalObjects
+		 }
+  }
 
 
 func UstToInt(u float64) int{
@@ -190,10 +162,10 @@ func UstToFloat(u int) float64{
 		  typeLine();
 		  sum:=0.0;
 		  for i:=0;i<allObject;i++ {
-		  u:=fmt.Sprintf("%.2f",myObjects[i].ust)  
-		  fmt.Println(i,myObjects[i].name," ",myObjects[i].adress," Z",myObjects[i].zone," U",u);
+		  u:=fmt.Sprintf("%.2f",gData.MyObjects[i].Ust)  
+		  fmt.Println(i,gData.MyObjects[i].Name," ",gData.MyObjects[i].Adress," Z",gData.MyObjects[i].Zone," U",u);
 		  regByObject(i);
-		  sum+=myObjects[i].ust;
+		  sum+=gData.MyObjects[i].Ust;
           typeLine();		
           }
 	    u:=fmt.Sprintf("%.2f",sum) 
@@ -209,8 +181,8 @@ func typeLine(){
 		  
 		  exist:=false;
 		  fmt.Println("reglaments: ");
-		  for d:=0;d<len(reglament[index]);d++ { 
-			if (reglament[index][d]==1){ 
+		  for d:=0;d<len(gData.Reglament[index]);d++ { 
+			if (gData.Reglament[index][d]==1){ 
 	            fmt.Print(d,",");
 				exist=true;
 			}
@@ -454,11 +426,11 @@ func typeUst(){
 	 max:=0.0;
 	 minDay:=0
 	 maxDay:=0
-		for i :=1;i<len(grafik);i++{
-			if grafik[i] !=0 && grafik[i] !=5 {
+		for i :=1;i<len(gData.Grafik);i++{
+			if gData.Grafik[i] !=0 && gData.Grafik[i] !=5 {
 			for ob:=0;ob<allObject;ob++ { 
-				if reglament[ob][i]==1 {
-					sum+=myObjects[ob].ust/float64(myObjects[ob].regInMonth)
+				if gData.Reglament[ob][i]==1 {
+					sum+=gData.MyObjects[ob].Ust/float64(gData.MyObjects[ob].RegInMonth)
 					 }
 					}
 					if sum<min {
@@ -472,7 +444,7 @@ func typeUst(){
 					} else{
 						 sum=0.0} 
 			u:=fmt.Sprintf("%.2f",sum) 			 
-			fmt.Println(i,tools.GetDay(firstDay,i)," ",tools.GetWork(grafik[i])," U",u);
+			fmt.Println(i,tools.GetDay(gData.FirstDay,i)," ",tools.GetWork(gData.Grafik[i])," U",u);
 			sum=0.0;
 			}
 			
@@ -490,34 +462,34 @@ func veryfy(){
 		e:=0;
 		for i:=0;i<allObject;i++ {
 		  r:=0;
-	      for d:=1;d<len(reglament[i]); d++ {
-				if reglament[i][d]>0 {
+	      for d:=1;d<len(gData.Reglament[i]); d++ {
+				if gData.Reglament[i][d]>0 {
 					r++;
-					if  grafik[d]==0  {
-						fmt.Println("day ",d,"-reglament in day off ",myObjects[i].name," I",i)
+					if  gData.Grafik[d]==0  {
+						fmt.Println("day ",d,"-reglament in day off ",gData.MyObjects[i].Name," I",i)
 						e++;
 				    }
 				} 
 			}
 		  
 			if r==0 {
-				fmt.Println(myObjects[i].name+" I",i," -no reglaments");
+				fmt.Println(gData.MyObjects[i].Name+" I",i," -no reglaments");
 				e++;
 			}
 		   
-			if r>0 && r<myObjects[i].regInMonth {
-				 fmt.Println(myObjects[i].name," I",i," -few days ",r," but need ",myObjects[i].regInMonth);
+			if r>0 && r<gData.MyObjects[i].RegInMonth {
+				 fmt.Println(gData.MyObjects[i].Name," I",i," -few days ",r," but need ",gData.MyObjects[i].RegInMonth);
 		      e++;
 			}		
 		}
-        for d:=1;d<len(grafik);d++ {
+        for d:=1;d<len(gData.Grafik);d++ {
 			r:=0;
 			for b:=0;b<allObject;b++ { 
-			  if reglament[b][d]>0 {
+			  if gData.Reglament[b][d]>0 {
 				  r++;
 			  }	
 			}
-		  if r==0 && grafik[d] !=0  {
+		  if r==0 && gData.Grafik[d] !=0  {
 			  fmt.Println("day ",d," -no reglaments");
 				e++;
 			}
@@ -532,7 +504,7 @@ func veryfy(){
 func addObject(){
 	   allObject++;
 	   newarr:=make([]int,32)
-	   reglament=append(reglament,newarr)
+	   gData.Reglament=append(gData.Reglament,newarr)
 	   setObject(allObject-1);
 	  if arhive {
 		    writeData(fileArhive);
@@ -547,24 +519,24 @@ func setObject(num int){
 	  typeLine();
 	  fmt.Println("data for the object  ",num);
 	   
-	  fmt.Println("enter name 0-next ",myObjects[num].name);
+	  fmt.Println("enter name 0-next ",gData.MyObjects[num].Name);
 	  s:=tools.St();
 	  if s !="0" {
-		   myObjects[num].name=s
+		   gData.MyObjects[num].Name=s
 		   }
 	  
-	  fmt.Println("enter adress 0-next ",myObjects[num].adress);
+	  fmt.Println("enter adress 0-next ",gData.MyObjects[num].Adress);
 	  s=tools.St();
 	  if s !="0" { 
-		   myObjects[num].adress=s
+		   gData.MyObjects[num].Adress=s
 	   }
 	
-	  fmt.Println("enter zone  ",myObjects[num].zone);
-	  myObjects[num].zone=tools.ReadInt();
-	  fmt.Println("enter the uslUst ",myObjects[num].ust);
-	  myObjects[num].ust=tools.ReadFloat()
-      fmt.Println("enter the num of reglaments ",myObjects[num].regInMonth);
-	  myObjects[num].regInMonth=tools.ReadInt();   
+	  fmt.Println("enter zone  ",gData.MyObjects[num].Zone);
+	  gData.MyObjects[num].Zone=tools.ReadInt();
+	  fmt.Println("enter the uslUst ",gData.MyObjects[num].Ust);
+	  gData.MyObjects[num].Ust=tools.ReadFloat()
+      fmt.Println("enter the num of reglaments ",gData.MyObjects[num].RegInMonth);
+	  gData.MyObjects[num].RegInMonth=tools.ReadInt();   
 	   
     } else {
 		fmt.Println("incorrect index");
@@ -593,8 +565,8 @@ func setObject(num int){
 func typeGrafik(){
 		  
 		  typeLine();
-		  for i:=1;i<len(grafik);i++{
-			  fmt.Println(i,tools.GetDay(firstDay,i)," ",tools.GetWork(grafik[i]));
+		  for i:=1;i<len(gData.Grafik);i++{
+			  fmt.Println(i,tools.GetDay(gData.FirstDay,i)," ",tools.GetWork(gData.Grafik[i]));
 		  }
 	      typeLine();
 	    }
@@ -603,48 +575,21 @@ func writeData(fileName string){
 		file, err := os.Create(fileName)
 		if err != nil{
         fmt.Println("Unable to create file:", err) 
+          os.Exit(1) 
         return 
          }
-		
-			file.WriteString("month "+strconv.Itoa(month)+" \n");
-			file.WriteString("firstDay "+ strconv.Itoa(firstDay)+" \n");
-			file.WriteString("total_objects "+ strconv.Itoa(allObject)+" \n");
-			for i:=0;i<allObject;i++ {
-				file.WriteString("index "+strconv.Itoa(i)+"\n");
-				file.WriteString("uslUst "+strconv.Itoa(tools.UstToInt(myObjects[i].ust))+"\n");
-				file.WriteString("zone "+strconv.Itoa(myObjects[i].zone)+"\n");
-				file.WriteString("name "+myObjects[i].name+"\n");
-				file.WriteString("adress "+myObjects[i].adress+"\n");
-				file.WriteString("regInMonth "+strconv.Itoa(myObjects[i].regInMonth)+"\n");		
-			}
-		
-			file.WriteString("Grafik \n"); 
-			for i:=0;i<len(grafik);i++ {
-				  file.WriteString(strconv.Itoa(grafik[i])+" "); 
-				    
-			}
-			file.WriteString("\n");
-			file.WriteString("Reglament \n");    
-            for i:=0;i<len(reglament);i++ {
-				for b:=0;b<len(reglament[i]);b++ { 
-					v:=reglament[i][b];
-					file.WriteString(strconv.Itoa(v)+" ");
-				}
-					file.WriteString("\n");
-			}
-	        file.Close() 
-			
-			fmt.Println("The file has been written");
-		
-		
-    }
+    defer file.Close() 
+    bytes,err := json.Marshal(gData)
+    file.Write(bytes)
+    fmt.Println("write Done.")
+	}
 	
  func search(s string) int {
 	   	
 	   	countSearch:=0;
 	   	n:=-1;
-	   	for i:=0;i<len(myObjects);i++ {
-			str :=myObjects[i].name;
+	   	for i:=0;i<len(gData.MyObjects);i++ {
+			str :=gData.MyObjects[i].Name;
 			
 			str= strings.ToLower(str)
 			
@@ -653,8 +598,8 @@ func writeData(fileName string){
 			if (b) {
 				countSearch++;
 				n=i 
-				u:=fmt.Sprintf("%.2f",myObjects[i].ust) 
-				fmt.Println(i,myObjects[i].name,myObjects[i].adress," Z",myObjects[i].zone," U",u," I",i);
+				u:=fmt.Sprintf("%.2f",gData.MyObjects[i].Ust) 
+				fmt.Println(i,gData.MyObjects[i].Name,gData.MyObjects[i].Adress," Z",gData.MyObjects[i].Zone," U",u," I",i);
 				regByObject(n);
 			  }
 		
@@ -685,15 +630,15 @@ func setAllObjects(){
 			if data>0 && data<32  {
 			exist:=false;
 			n:=1;
-			fmt.Println("Data:",data,tools.GetMonth(month),",",tools.GetDay(firstDay,data));
-			fmt.Println("grafik:",tools.GetWork(grafik[data]));
+			fmt.Println("Data:",data,tools.GetMonth(gData.Month),",",tools.GetDay(gData.FirstDay,data));
+			fmt.Println("grafik:",tools.GetWork(gData.Grafik[data]));
 			fmt.Println("reglaments: ");
 			sum:=0.0;
 			for ob:=0;ob<allObject;ob++ { 
-				if  reglament[ob][data]==1 { 
-					u:=fmt.Sprintf("%.2f",myObjects[ob].ust) 
-					fmt.Println(n,myObjects[ob].name," ",myObjects[ob].adress," Z",myObjects[ob].zone," U",u," I",ob);
-					sum+=myObjects[ob].ust/float64 (myObjects[ob].regInMonth);
+				if  gData.Reglament[ob][data]==1 { 
+					u:=fmt.Sprintf("%.2f",gData.MyObjects[ob].Ust) 
+					fmt.Println(n,gData.MyObjects[ob].Name," ",gData.MyObjects[ob].Adress," Z",gData.MyObjects[ob].Zone," U",u," I",ob);
+					sum+=gData.MyObjects[ob].Ust/float64 (gData.MyObjects[ob].RegInMonth);
 					typeLine();
 					n++;
 					exist=true;
@@ -717,7 +662,7 @@ func setAllReglament(){
 		if (d==1){
 		for ob:=0;ob<allObject+5;ob++{
 			for d:=0;d<32;d++{ 
-				reglament[ob][d]=0
+				gData.Reglament[ob][d]=0
 			}
 		}
 		
@@ -732,20 +677,20 @@ func setAllReglament(){
 	   if ob>-1 && ob<allObject {
 	   d:=0;
 	   t:=0;
-	   fmt.Println("object:",myObjects[ob].name);
+	   fmt.Println("object:",gData.MyObjects[ob].Name);
 		
 		//for i:=0;i<len(reglament[ob]);i++ {
 			//reglament[ob][i]=0;
 			//}
 		
-		t=myObjects[ob].regInMonth;
+		t=gData.MyObjects[ob].RegInMonth;
 		for i:=1;i<t+1;i++ {
 			fmt.Print("day",i,": ");
 			y:=false;
 			for !y {
 				d=tools.ReadInt();
 				if (d<32) {
-					reglament[ob][d]=1;
+					gData.Reglament[ob][d]=1;
 					y=true;
 					} else{
 						 fmt.Println("wrong date");
@@ -762,14 +707,14 @@ func setAllGrafik(){
 		  
 		  typeLine();
 		   fmt.Println("enter month 1-jan 2-feb..12-dec");
-		  month=tools.ReadInt()-1;
+		  gData.Month=tools.ReadInt()-1;
 		  fmt.Println("enter year ");
 		 
 		 year=tools.ReadInt();
-		  fut:= time.Date(year,time.Month(month+1),1,1,1,1,1, time.Local)
-		  firstDay=int(fut.Weekday())+1
+		  fut:= time.Date(year,time.Month(gData.Month+1),1,1,1,1,1, time.Local)
+		  gData.FirstDay=int(fut.Weekday())+1
 		
-		  for i:=1;i<len(grafik);i++ {
+		  for i:=1;i<len(gData.Grafik);i++ {
 			  editOne(i);
 		    }
 	    }
@@ -782,8 +727,8 @@ func editOne(day int){
 		  fmt.Println("0-day off 1-9:18");
 		  fmt.Println("2-13:22 3-9:17");
 		  fmt.Println("4-13:21 5-business trip");
-		   fmt.Println("grafik for the ",day,"st",grafik[day]);
-		  grafik[day]=tools.ReadInt();
+		   fmt.Println("grafik for the ",day,"st",gData.Grafik[day]);
+		  gData.Grafik[day]=tools.ReadInt();
 		} else {
 			 fmt.Println("incorrect day");
 		 }
@@ -863,22 +808,22 @@ func readArhive(){
 		 
 func delObject(d int){
 		  if d>-1 && d<allObject {
-		  fmt.Println("object ",myObjects[d].name," will be deleted");
+		  fmt.Println("object ",gData.MyObjects[d].Name," will be deleted");
 		  fmt.Println("continue ? 1-yes 2-cancel");
 		  v:=tools.ReadInt();
 		  if v==1{
 			  for i:=d;i<allObject+1;i++ {
-				  myObjects[i].name=myObjects[i+1].name;
-				  myObjects[i].adress=myObjects[i+1].adress;
-				  myObjects[i].zone=myObjects[i+1].zone; 
-				  myObjects[i].ust=myObjects[i+1].ust;
-                  myObjects[i].regInMonth=myObjects[i+1].regInMonth;
+				  gData.MyObjects[i].Name=gData.MyObjects[i+1].Name;
+				  gData.MyObjects[i].Adress=gData.MyObjects[i+1].Adress;
+				  gData.MyObjects[i].Zone=gData.MyObjects[i+1].Zone; 
+				  gData.MyObjects[i].Ust=gData.MyObjects[i+1].Ust;
+                  gData.MyObjects[i].RegInMonth=gData.MyObjects[i+1].RegInMonth;
           			
 			    }
 			  
 			  for b:=d;b<allObject;b++ {
-				  for day:=0;day<len(reglament[b]);day++{
-					  reglament[b][day]=reglament[b+1][day];
+				  for day:=0;day<len(gData.Reglament[b]);day++{
+					  gData.Reglament[b][day]=gData.Reglament[b+1][day];
 				    }
 				}
 			  allObject -= 1;
@@ -901,10 +846,10 @@ func delObject(d int){
 func replaceDays(d1,d2 int){
 		var tmp int;
 		if  d1>0 && d1<32 && d2>0 && d2<32 {
-		for i:=0;i<len(reglament);i++ {
-			tmp=reglament[i][d1];
-			reglament[i][d1]=reglament[i][d2];
-			reglament[i][d2]=tmp;
+		for i:=0;i<len(gData.Reglament);i++ {
+			tmp=gData.Reglament[i][d1];
+			gData.Reglament[i][d1]=gData.Reglament[i][d2];
+			gData.Reglament[i][d2]=tmp;
 			}
 		}
 		if arhive {
