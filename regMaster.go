@@ -26,7 +26,7 @@ type dataReg struct {
 	FirstDay int
 	TotalObjects int
 	MyObjects []myObject
-	Grafik []int
+	Grafik [32]int
 	Reglament [][]int
 	
 	}	
@@ -66,8 +66,8 @@ var   gData dataReg
 	  year=calendar.Year()
 	  initr()  
 	  typeLine();         
-	  fmt.Println("*      RegMaster v.5.4      *");
-	  fmt.Println("*Takhir Bairashevski nov2024*");
+	  fmt.Println("*      RegMaster v.5.5      *");
+	  fmt.Println("*Takhir Bairashevski dec2024*");
 	  typeLine();
 	  fmt.Println("Today ",day,monthN,year);
 	  
@@ -118,7 +118,7 @@ func initr(){
  
 func makeArray(){
 	gData.MyObjects=make([]myObject,allObject+5)
-	gData.Grafik=make([]int,32)
+	//gData.Grafik=make([]int,32)
 	gData.Reglament=make([][]int,allObject+5)
 	for i:=0;i<allObject+5;i++{
 		gData.Reglament[i]=make([]int,32)
@@ -489,10 +489,11 @@ func veryfy(){
 				  r++;
 			  }	
 			}
-		  if r==0 && gData.Grafik[d] !=0  {
+		  if r==0 && gData.Grafik[d] !=0 && gData.Grafik[d] !=5 {
 			  fmt.Println("day ",d," -no reglaments");
 				e++;
 			}
+		  
 		}
 		
 		fmt.Println("errors found ",e);
@@ -679,9 +680,9 @@ func setAllReglament(){
 	   t:=0;
 	   fmt.Println("object:",gData.MyObjects[ob].Name);
 		
-		//for i:=0;i<len(reglament[ob]);i++ {
-			//reglament[ob][i]=0;
-			//}
+		for i:=0;i<len(gData.Reglament[ob]);i++ {
+			gData.Reglament[ob][i]=0;
+			}
 		
 		t=gData.MyObjects[ob].RegInMonth;
 		for i:=1;i<t+1;i++ {
