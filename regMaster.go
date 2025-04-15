@@ -2,6 +2,7 @@
   * 1 добавить команду zone для распечатки нужной зоны
   * 2 команду newmonth для нового месяца
   * 3 добавления объекта в нужное место а не в конец
+  * 4 убрать obt -сразу поиск 
   * 
   * 
   * */
@@ -169,11 +170,11 @@ func UstToFloat(u int) float64{
 		  typeLine();
 		  sum:=0.0;
 		  for i:=0;i<len(gData.MyObjects);i++ {
-		  u:=fmt.Sprintf("%.2f",gData.MyObjects[i].Ust)  
-		  fmt.Println(i,gData.MyObjects[i].Name," ",gData.MyObjects[i].Adress," Z",gData.MyObjects[i].Zone," U",u);
-		  regByObject(i);
-		  sum+=gData.MyObjects[i].Ust;
-          typeLine();		
+			u:=fmt.Sprintf("%.2f",gData.MyObjects[i].Ust)  
+			fmt.Println(i,gData.MyObjects[i].Name," ",gData.MyObjects[i].Adress," Z",gData.MyObjects[i].Zone," U",u);
+			regByObject(i);
+			sum+=gData.MyObjects[i].Ust;
+			typeLine();		
           }
 	    u:=fmt.Sprintf("%.2f",sum) 
 	    fmt.Println("total usl ust ",u);
@@ -201,6 +202,25 @@ func typeLine(){
 			  }
         		
 	    }
+	    
+func typeZone(z int){
+	 typeLine();
+	 fmt.Println("Зона № ",z)
+		  sum:=0.0;
+		  k:=1;
+		  for i:=0;i<len(gData.MyObjects);i++ {
+			if gData.MyObjects[i].Zone==z{
+			u:=fmt.Sprintf("%.2f",gData.MyObjects[i].Ust)  
+			fmt.Println(k,gData.MyObjects[i].Name," ",gData.MyObjects[i].Adress," Z",gData.MyObjects[i].Zone," U",u);
+			regByObject(i);
+			sum+=gData.MyObjects[i].Ust;
+			k++
+			typeLine();		
+          }
+	  }
+	    u:=fmt.Sprintf("%.2f",sum) 
+	    fmt.Println("total usl ust ",u);
+	}
 	    
 func comandLine(){
 		
@@ -234,6 +254,16 @@ func comandLine(){
 						err=false;
 					    work=false
 					}
+					case "newmonth": {
+						err=false;
+					    fmt.Println("all data will be overwritten.Continue ? 1-yes");
+		                d:=tools.ReadInt();
+		                if (d==1){
+							setAllGrafik();
+							setAllReglament();}
+					    
+					}
+					
 					case "q": {
 						err=false;
 					    work=false
@@ -299,7 +329,10 @@ func comandLine(){
 						ind=search(parts[1]);
 						err=false;
 						}
-				
+				     case "zone": {
+						typeZone(tools.ToInt(parts[1]));
+						err=false;
+						}
 			
 					case "del" :{
 						 ind =search(parts[1]);
@@ -336,7 +369,11 @@ func comandLine(){
 						        
 							case "reg": {
 								if  parts[2]=="all" {
-									setAllReglament();
+									fmt.Println("all data will be overwritten.Continue ? 1-yes");
+									d:=tools.ReadInt();
+									if (d==1){
+										setAllReglament();
+									}
 									err=false;
 								} else { 
 									ind=search(parts[2]);
@@ -348,7 +385,11 @@ func comandLine(){
 							}
 						    case "gr" : {
 								if parts[2]=="all" {
-									setAllGrafik();
+									fmt.Println("all data will be overwritten.Continue ? 1-yes");
+									d:=tools.ReadInt();
+									if (d==1){
+										setAllGrafik();
+									}
 									err=false;
 								} else { 
 							         ind=tools.ToInt(parts[2]);
@@ -371,6 +412,8 @@ func comandLine(){
 		if err {
 			fmt.Println("error in parameters");
 			}	
+		} else {
+			ind=search(str);
 		}
 	}
 	    if !arhive {
@@ -384,8 +427,8 @@ func comandLine(){
 func checkComand(s string) bool {
 		b:=false;
 		
-		 mainComand:= []string{"q","add","check","menu","help","exit","rep","day","obt","obs",
-			                   "grk","greg","gust","del","arhr","arhs","ed","restore"};
+		 mainComand:= []string{"q","add","check","menu","help","exit","rep","day","obs",
+			                   "grk","greg","gust","del","arhr","arhs","ed","restore","zone","newmonth"};
 		parts:=strings.Split(s," ")
 		
 		s1:=parts[0];
@@ -395,9 +438,9 @@ func checkComand(s string) bool {
 				}
 		     }
 		
-		 if !b { 
-			 fmt.Println("command not found  "+s1)
-			 }
+		// if !b { 
+			// fmt.Println("command not found  "+s1)
+			// }
 		return b;
 		}	    	  
 
@@ -411,7 +454,7 @@ func typeHelp(){
 		fmt.Println("day <number day> -type grafik and objects for the current day");
 		fmt.Println("help -type this help");
 		fmt.Println("menu   -mode with menu");
-		fmt.Println("obt <name object>  - type data for the object");
+		fmt.Println("<name object>  - type data for the object");
 		fmt.Println("obs  -type all objects");
 		fmt.Println("grk-type grafik");
 		fmt.Println("greg-type regl and grafik");
@@ -422,8 +465,10 @@ func typeHelp(){
 		fmt.Println("ed reg <name object> -edit one reglament");
 		fmt.Println("ed gr all -edit all grafik");
 		fmt.Println("ed gr <day>  -edit one day");
+		fmt.Println("newmonth  -entering data for a new month");
 		fmt.Println("rep <day1> <day2>  -replacing reg from day1 to day2");
 		fmt.Println("restore -restoring a database from an archive");
+		fmt.Println("zone <number zone> -print zone objects");
 		}	
 	
 func typeUst(){
@@ -667,9 +712,7 @@ func setAllObjects(){
 	
 	
 func setAllReglament(){
-	    fmt.Println("all data will be overwritten.Continue ? 1-yes");
-		d:=tools.ReadInt();
-		if (d==1){
+	    
 		for ob:=0;ob<len(gData.MyObjects);ob++{
 			for d:=0;d<32;d++{ 
 				gData.Reglament[ob][d]=0
@@ -681,7 +724,7 @@ func setAllReglament(){
 		}
 	  }
 		
-	}
+	
 	
  func setReglament(ob int){
 	   if ob>-1 && ob<len(gData.MyObjects) {
