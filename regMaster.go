@@ -1,22 +1,11 @@
- /* необходимо
-  * 1 добавить команду zone для распечатки нужной зоны
-  * 2 команду newmonth для нового месяца
-  * 3 добавления объекта в нужное место а не в конец
-  * 4 убрать obt -сразу поиск 
-  * 
-  * 
-  * */
- 
- 
- package main
+  package main
  import(
- //"bufio"
     "fmt"
     "log"
     "os"
     "strings"
     "time"
-    //"strconv"  len(gData.MyObjects)
+    "strconv"  
     "regMaster/tools"
     "io/ioutil"
     "encoding/json"
@@ -38,15 +27,12 @@ type dataReg struct {
 	MyObjects []myObject
 	Grafik [32]int
 	Reglament [][]int
-	
 	}	
 
 
 
  var  day, 
-     // firstDay,//	  1st day of week 0-sun 1-mon...6-sat
-	  year,
-	 // month,
+      year,monthN,
 	  modeMenu,
 	  modeComand,
 	  mode int
@@ -54,9 +40,7 @@ var  arhive bool
 var	  fileData, //= "data.dpm";
 	  filesDir,//,="arhive";
 	  fileArhive string
-//var	  myObjects []myObject;
-//var	  grafik [32]int
-//var	  reglament [][]int
+
 var   calendar time.Time
 var   gData dataReg	  
  
@@ -70,13 +54,12 @@ var   gData dataReg
 	  fileData="data.bin"
 	  filesDir="arhive"
 	  day=calendar.Day()
-	 var  monthN int
 	  monthN= int(calendar.Month())
 	  year=calendar.Year()
 	  initr()  
 	  typeLine();         
-	  fmt.Println("*      RegMaster v.5.5      *");
-	  fmt.Println("*Takhir Bairashevski dec2024*");
+	  fmt.Println("*      RegMaster v.6.0      *");
+	  fmt.Println("*Takhir Bairashevski apr2025*");
 	  typeLine();
 	  fmt.Println("Today ",day,monthN,year);
 	  
@@ -89,7 +72,7 @@ var   gData dataReg
 		fmt.Println("1-menu  0-exit"); 	   
 	    s:=tools.ReadInt();
         if s==1 {
-			//mainMenu()}
+			fmt.Println("This version does not support menu mode.")
 			}
 		}
        if mode==modeComand{ 
@@ -126,7 +109,6 @@ func initr(){
  
 func makeArray(){
 	gData.MyObjects=make([]myObject,gData.TotalObjects)
-	//gData.Grafik=make([]int,32)
 	gData.Reglament=make([][]int,gData.TotalObjects)
 	for i:=0;i<len(gData.MyObjects);i++{
 		gData.Reglament[i]=make([]int,32)
@@ -186,8 +168,7 @@ func typeLine(){
     }	
 					
  func regByObject(index int){
-		  
-		  exist:=false;
+	  exist:=false;
 		  fmt.Println("reglaments: ");
 		  for d:=0;d<len(gData.Reglament[index]);d++ { 
 			if (gData.Reglament[index][d]==1){ 
@@ -200,9 +181,9 @@ func typeLine(){
 		  if !exist {
 			  fmt.Println("reglaments not found");
 			  }
-        		
-	    }
-	    
+     }
+  
+
 func typeZone(z int){
 	 typeLine();
 	 fmt.Println("Зона № ",z)
@@ -221,6 +202,10 @@ func typeZone(z int){
 	    u:=fmt.Sprintf("%.2f",sum) 
 	    fmt.Println("total usl ust ",u);
 	}
+func isInteger(s string) bool {
+	_, err := strconv.Atoi(s)
+	return err == nil
+}
 	    
 func comandLine(){
 		
@@ -245,7 +230,15 @@ func comandLine(){
 			if str=="" || len(str) ==0 {
 				continue
 				}
-			if checkComand(str) {
+			if !checkComand(str) { //если это не команда
+					d, err := strconv.Atoi(str)
+					if err==nil{ //  и если это число  
+						regByDay(d) // показываем день
+						} else { // иначе
+							_=search(str);// ищем объект
+							}
+			
+				} else {  // если это команда то обрабатываем ее
 				
 			parts:=strings.Split(str," ")
             if len(parts)==1 {
@@ -259,8 +252,10 @@ func comandLine(){
 					    fmt.Println("all data will be overwritten.Continue ? 1-yes");
 		                d:=tools.ReadInt();
 		                if (d==1){
+							saveArhive();
 							setAllGrafik();
-							setAllReglament();}
+							setAllReglament();
+							}
 					    
 					}
 					
@@ -321,14 +316,7 @@ func comandLine(){
 			  
              if len(parts)==2 {
 				switch parts[0] {
-					case "day": {
-						regByDay(tools.ToInt(parts[1]));
-						err=false; 
-						}
-					case "obt": {
-						ind=search(parts[1]);
-						err=false;
-						}
+					
 				     case "zone": {
 						typeZone(tools.ToInt(parts[1]));
 						err=false;
@@ -412,9 +400,7 @@ func comandLine(){
 		if err {
 			fmt.Println("error in parameters");
 			}	
-		} else {
-			ind=search(str);
-		}
+		} 
 	}
 	    if !arhive {
 			 os.Exit(0);
@@ -427,7 +413,7 @@ func comandLine(){
 func checkComand(s string) bool {
 		b:=false;
 		
-		 mainComand:= []string{"q","add","check","menu","help","exit","rep","day","obs",
+		 mainComand:= []string{"q","add","check","menu","help","exit","rep","obs",
 			                   "grk","greg","gust","del","arhr","arhs","ed","restore","zone","newmonth"};
 		parts:=strings.Split(s," ")
 		
@@ -437,10 +423,6 @@ func checkComand(s string) bool {
 				b=true;
 				}
 		     }
-		
-		// if !b { 
-			// fmt.Println("command not found  "+s1)
-			// }
 		return b;
 		}	    	  
 
@@ -451,7 +433,6 @@ func typeHelp(){
 		fmt.Println("arhs -save in arhive");
 		fmt.Println("check   -data base check");
 		fmt.Println("del <name object> -delete object");
-		fmt.Println("day <number day> -type grafik and objects for the current day");
 		fmt.Println("help -type this help");
 		fmt.Println("menu   -mode with menu");
 		fmt.Println("<name object>  - type data for the object");
@@ -610,10 +591,23 @@ func setObject(num int){
 	  n:=tools.ReadInt();
 	  if n==1 {
 	  typeLine();
-	  fmt.Println("Enter filename to save");
-	  fn:=tools.St();
-	  fn=filesDir+"/"+fn;
-	  writeData(fn);
+	  ds:=strconv.Itoa(day);
+	  if day<10 {
+		  ds ="0"+strconv.Itoa(day);
+	  }
+	  ms:=strconv.Itoa(monthN);
+	  if monthN<10 {
+		  ms="0"+strconv.Itoa(monthN);
+		  }
+	  name:=ds+ms+strconv.Itoa(year)+".bin"
+	  fmt.Println("file name ",name,"1 -yes 2-other name")
+	  n:=tools.ReadInt();
+	  if n==2 {
+		fmt.Println("Enter filename to save");
+		name=tools.St();
+	  }
+	  name=filesDir+"/"+name;
+	  writeData(name);
 	  typeLine();}
   };	
 	
@@ -868,12 +862,7 @@ func delObject(d int){
 			  gData.MyObjects = append(gData.MyObjects[:d],gData.MyObjects[d+1:]...)
           			
 			    gData.Reglament = append(gData.Reglament[:d],gData.Reglament[d+1:]...)
-			 /* 
-			  for b:=d;b<len(gData.MyObjects);b++ {
-				  for day:=0;day<len(gData.Reglament[b]);day++{
-					  gData.Reglament[b][day]=gData.Reglament[b+1][day];
-				    }
-				}*/
+			
 			   gData.TotalObjects-=1;
 			 if arhive {
 				 writeData(fileArhive);
