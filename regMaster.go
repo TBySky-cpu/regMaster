@@ -64,7 +64,9 @@ var   gData dataReg
 	  fmt.Println("Today ",day,monthN,year);
 	  
 	  if gData.Month+1 != monthN {
-		   fmt.Println ("database is out of date");
+		   typeLine()
+		   fmt.Println ("DATABASE IS OUT OF DATE !!");
+		   typeLine()
 		   }
 	  regByDay(day);
 	  typeLine();
@@ -212,6 +214,7 @@ func comandLine(){
 		str:="";
 		str1:="";
 		
+		
 		var d1,d2,ind int
 		
 		
@@ -222,7 +225,7 @@ func comandLine(){
 		for work {
 			err=true;
 			if arhive {
-				fmt.Println("**working in arhive**")
+				fmt.Println("**working in arhive -",fileArhive)
 			    } 
 			fmt.Print("> ");
 			str1=tools.St();
@@ -255,6 +258,7 @@ func comandLine(){
 							saveArhive();
 							setAllGrafik();
 							setAllReglament();
+							writeData(fileData);
 							}
 					    
 					}
@@ -680,7 +684,13 @@ func setAllObjects(){
 			exist:=false;
 			n:=1;
 			fmt.Println("Data:",data,tools.GetMonth(gData.Month),",",tools.GetDay(gData.FirstDay,data));
-			fmt.Println("grafik:",tools.GetWork(gData.Grafik[data]));
+			s:=tools.GetWork(gData.Grafik[data])
+			fmt.Println("grafik:",s);
+			if s=="09-17" || s=="13-21" {
+				typeLine()
+				fmt.Println("SHORTENED WORKING HOURS !!")
+				typeLine()
+				}
 			fmt.Println("reglaments: ");
 			sum:=0.0;
 			for ob:=0;ob<len(gData.MyObjects);ob++ { 
@@ -817,10 +827,10 @@ func getFile(dir string) string {
 
 
 
-func readArhive(){
+func readArhive() {
 	name:=getFile(filesDir)
 	if name=="error"{
-		return
+		return 
 		}
 	fileArhive=filesDir+"/"+name
 	readData(fileArhive);
