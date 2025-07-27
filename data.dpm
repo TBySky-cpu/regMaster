@@ -1,0 +1,200 @@
+month 0 
+firstDay 4 
+total_objects 27 
+index 0
+uslUst 640
+zone 0
+name АСО,звукозапись
+adress орловского,2
+regInMonth 4
+index 1
+uslUst 770
+zone 0
+name РСПИ_Новатех
+adress Орловского,2
+regInMonth 4
+index 2
+uslUst 600
+zone 0
+name Бензоагрегат
+adress Орловского,2
+regInMonth 4
+index 3
+uslUst 4317
+zone 2
+name БАПБ(пож)
+adress Садовая,13
+regInMonth 5
+index 4
+uslUst 277
+zone 2
+name Кладовая-Беларусбанк
+adress 17Сентября,1
+regInMonth 1
+index 5
+uslUst 140
+zone 2
+name КТС-Беларусбанк
+adress 17Сентября,1
+regInMonth 1
+index 6
+uslUst 65
+zone 2
+name КТС-рынок-лань
+adress Гагарина,4
+regInMonth 1
+index 7
+uslUst 1361
+zone 2
+name Музей
+adress Гагарина,6
+regInMonth 2
+index 8
+uslUst 2680
+zone 2
+name Аптека-N1
+adress Победы,87
+regInMonth 3
+index 9
+uslUst 140
+zone 2
+name КТС_РИК
+adress пл_маяковского_4
+regInMonth 1
+index 10
+uslUst 66
+zone 2
+name Флаг-шток-РИК
+adress пл,Маяковского,4
+regInMonth 1
+index 11
+uslUst 151
+zone 2
+name Оружейная-комната-РОВД
+adress Ленина,5
+regInMonth 1
+index 12
+uslUst 826
+zone 4
+name БТИ
+adress Пионерская_16
+regInMonth 1
+index 13
+uslUst 231
+zone 1
+name магазин_Авоська
+adress Макавчука_43
+regInMonth 1
+index 14
+uslUst 210
+zone 4
+name Магазин_Волга
+adress Пушкина_54
+regInMonth 1
+index 15
+uslUst 1302
+zone 4
+name маг_Кл_Крыначка
+adress Советская_2а
+regInMonth 2
+index 16
+uslUst 75
+zone 4
+name КТС_ветстанция
+adress 17сентября_63
+regInMonth 1
+index 17
+uslUst 75
+zone 4
+name ктсМагМагияВкуса
+adress 17сентября_61а
+regInMonth 1
+index 18
+uslUst 243
+zone 4
+name комнХранОружия_Лагуна
+adress победы
+regInMonth 1
+index 19
+uslUst 65
+zone 4
+name КТС_рсу
+adress техническая_5
+regInMonth 1
+index 20
+uslUst 65
+zone 4
+name КТС_цех_памятников
+adress победы_149
+regInMonth 1
+index 21
+uslUst 185
+zone 4
+name КТС_ст2подъема
+adress победы_200
+regInMonth 1
+index 22
+uslUst 55
+zone 4
+name КТС_диспетчЖКХ
+adress школьная_18
+regInMonth 1
+index 23
+uslUst 349
+zone 4
+name опер_зал_рупс
+adress маяковского_3
+regInMonth 1
+index 24
+uslUst 75
+zone 4
+name ктс-магазин-N36
+adress партизанская-1
+regInMonth 1
+index 25
+uslUst 200
+zone 2
+name касса-коопзаготпром
+adress гагарина-1
+regInMonth 1
+index 26
+uslUst 100
+zone 4
+name ктс-горгаз
+adress победы
+regInMonth 1
+Grafik 
+0 0 0 2 0 0 0 2 1 1 1 4 0 0 1 2 1 0 0 2 1 1 2 1 1 2 0 0 2 1 1 2 
+Reglament 
+0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 
+0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 
+0 0 0 0 0 0 0 1 0 0 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0 
+0 0 0 1 0 0 0 0 1 1 1 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 1 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 

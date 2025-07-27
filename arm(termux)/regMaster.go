@@ -226,7 +226,6 @@ func comandLine(){
 			err=true;
 			if arhive {
 				fmt.Println("**working in arhive -",fileArhive)
-				fmt.Println("month - ",tools.GetMonth(gData.Month)) 
 			    } 
 			fmt.Print("> ");
 			str1=tools.St();
