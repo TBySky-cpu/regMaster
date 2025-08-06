@@ -18,15 +18,17 @@
 	Ust float64;
 	RegInMonth int;
 	Index int
+	Note  string
 	}
 	
 type dataReg struct {
-	Month int
-	FirstDay int
+	Month        int
+	FirstDay     int
+	Year         int
 	TotalObjects int
-	MyObjects []myObject
-	Grafik [32]int
-	Reglament [][]int
+	MyObjects    []myObject
+	Grafik [32]  int
+	Reglament    [][]int
 	}	
 
 
@@ -36,7 +38,7 @@ type dataReg struct {
 	  modeMenu,
 	  modeComand,
 	  mode int
-var  arhive bool
+var   arhive bool
 var	  fileData, //= "data.dpm";
 	  filesDir,//,="arhive";
 	  fileArhive string
@@ -226,8 +228,8 @@ func comandLine(){
 			err=true;
 			if arhive {
 				fmt.Println("**working in arhive -",fileArhive)
-				fmt.Println("month - ",tools.GetMonth(gData.Month)) 
-			    } 
+				fmt.Println("archive for",tools.GetMonth(gData.Month),gData.Year)
+				} 
 			fmt.Print("> ");
 			str1=tools.St();
 			str=strings.Trim(str1, " ")
@@ -239,7 +241,7 @@ func comandLine(){
 					if err==nil{ //  и если это число  
 						regByDay(d) // показываем день
 						} else { // иначе
-							_=search(str);// ищем объект
+							_=search(str,false);// ищем объект
 							}
 			
 				} else {  // если это команда то обрабатываем ее
@@ -328,7 +330,7 @@ func comandLine(){
 						}
 			
 					case "del" :{
-						 ind =search(parts[1]);
+						 ind =search(parts[1],true);
 						 if  ind>-1  {
 							 delObject(ind);
 							 err=false;}
@@ -352,7 +354,7 @@ func comandLine(){
 									setAllObjects();
 									err=false;
 								} else {
-									 ind=search(parts[2]);
+									 ind=search(parts[2],true);
 							          if ind>-1 {
 										  setObject(ind) 
 										  err=false;
@@ -369,7 +371,7 @@ func comandLine(){
 									}
 									err=false;
 								} else { 
-									ind=search(parts[2]);
+									ind=search(parts[2],true);
 									 if (ind>-1) {
 											setReglament(ind);
 											err=false;
@@ -638,7 +640,7 @@ func writeData(fileName string){
     fmt.Println("write Done.")
 	}
 	
- func search(s string) int {
+ func search(s string, result bool) int {
 	   	
 	   	countSearch:=0;
 	   	n:=-1;
@@ -661,7 +663,7 @@ func writeData(fileName string){
 		 if n==-1 {
 			 fmt.Println("not found ",s)
 			}
-		 if (countSearch>1) {
+		 if countSearch>1 && result {
 			fmt.Println("enter index object");
 			n=tools.ReadInt();}
 		return n;
@@ -771,7 +773,7 @@ func setAllGrafik(){
 		 year=tools.ReadInt();
 		  fut:= time.Date(year,time.Month(gData.Month+1),1,1,1,1,1, time.Local)
 		  gData.FirstDay=int(fut.Weekday())+1
-		
+		  gData.Year = year 
 		  for i:=1;i<len(gData.Grafik);i++ {
 			  editOne(i);
 		    }
