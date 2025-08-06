@@ -9,6 +9,7 @@
     "regMaster/tools"
     "io/ioutil"
     "encoding/json"
+    "errors"
     )
 
  type myObject struct{
@@ -339,6 +340,21 @@ func comandLine(){
 				} 
 			   if len(parts)==3 {
 				switch parts[0] {
+					case "arh" :{
+						err =false
+						m:=tools.ToInt(parts[1]);
+						y:=tools.ToInt(parts[2]);
+						err:=findArhive(m,y)
+						if err == nil { 
+							arhive=true;
+							comandLine();
+							arhive=false;
+						} else {
+							fmt.Println(err)
+							readData(fileData)
+							} 
+						}
+					
 					case "rep" :{
 						d1=tools.ToInt(parts[1]);
 						d2=tools.ToInt(parts[2]);
@@ -393,7 +409,8 @@ func comandLine(){
 										}
 							         err=false;
 							         }	
-								}						
+								}
+														
 							}
 					if (arhive){
 						 writeData(fileArhive);
@@ -421,7 +438,7 @@ func checkComand(s string) bool {
 		b:=false;
 		
 		 mainComand:= []string{"q","add","check","menu","help","exit","rep","obs",
-			                   "grk","greg","gust","del","arhr","arhs","ed","restore","zone","newmonth"};
+			                   "grk","greg","gust","del","arhr","arhs","ed","restore","zone","newmonth","arh"};
 		parts:=strings.Split(s," ")
 		
 		s1:=parts[0];
@@ -436,9 +453,11 @@ func checkComand(s string) bool {
 
 func typeHelp(){
 		fmt.Println("add -add object");
+		fmt.Println("arh <month> <year>  - find and read arhive file");
 		fmt.Println("arhr -read arhive file");
 		fmt.Println("arhs -save in arhive");
 		fmt.Println("check   -data base check");
+		fmt.Println("<day> -type data for the day");
 		fmt.Println("del <name object> -delete object");
 		fmt.Println("help -type this help");
 		fmt.Println("menu   -mode with menu");
@@ -908,3 +927,30 @@ func replaceDays(d1,d2 int){
 				 writeData(fileData);
 			 }
 		}
+		
+func findArhive(m int, y int) error {
+	if m < 1 || m > 12 {
+        return errors.New("month must be between 1 and 12")
+    }
+    if y < 2020 {
+        return errors.New("year must be 2020 or later")
+    }
+    
+    lst, err := ioutil.ReadDir(filesDir)
+	
+	if err != nil {
+		return errors.New("can.t open  dir "+filesDir)
+	}
+	
+	for i:=0;i<len(lst);i++{
+	 if lst[i].IsDir()==false {
+		  fileArhive=filesDir+"/"+lst[i].Name()
+	      readData(fileArhive);
+	      if gData.Month +1  ==m && gData.Year == y {
+			 
+			  return nil
+			  }
+		 }
+	 }
+	 	return errors.New(" no arhive for "+strconv.Itoa(m)+" "+strconv.Itoa(y))	
+	}		
