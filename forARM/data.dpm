@@ -1,0 +1,39 @@
+month 11 
+firstDay 1 
+total_objects 4 
+index 0
+uslUst 200
+zone 1
+name n1
+adress a1
+regInMonth 1
+index 1
+uslUst 300
+zone 1
+name n2
+adress a2
+regInMonth 1
+index 2
+uslUst 300
+zone 1
+name n3
+adress a3
+regInMonth 1
+index 3
+uslUst 600
+zone 2
+name n5
+adress a5
+regInMonth 2
+Grafik 
+0 1 1 1 2 1 1 1 2 1 1 1 2 1 1 1 2 0 0 1 1 0 0 1 1 2 2 1 1 1 1 1 
+Reglament 
+0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
