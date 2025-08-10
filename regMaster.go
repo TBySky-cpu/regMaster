@@ -255,7 +255,9 @@ func comandLine(){
 					case "exit": {
 						err=false;
 					    work=false
-					}
+					    }
+					case "notes" : typeNotes()
+					               err = false
 					case "newmonth": {
 						err=false;
 					    fmt.Println("all data will be overwritten.Continue ? 1-yes");
@@ -327,7 +329,15 @@ func comandLine(){
              if len(parts)==2 {
 				switch parts[0] {
 					
-				     case "zone": {
+				    case "note" :{
+						ind=search(parts[1],true)
+						if ind >-1 {
+							editNote(ind)
+							err=false
+							}
+						}
+				    
+				    case "zone": {
 						typeZone(tools.ToInt(parts[1]));
 						err=false;
 						}
@@ -440,7 +450,7 @@ func checkComand(s string) bool {
 		b:=false;
 		
 		 mainComand:= []string{"q","add","check","menu","help","exit","rep","obs",
-			                   "grk","greg","gust","del","arhr","arhs","ed","restore","zone","newmonth","arh"};
+			                   "grk","greg","gust","del","arhr","arhs","ed","restore","zone","newmonth","arh","note","notes"};
 		parts:=strings.Split(s," ")
 		
 		s1:=parts[0];
@@ -475,6 +485,8 @@ func typeHelp(){
 		fmt.Println("ed gr all -edit all grafik");
 		fmt.Println("ed gr <day>  -edit one day");
 		fmt.Println("newmonth  -entering data for a new month");
+		fmt.Println("note <object> - entering a note for an object ")
+		fmt.Println("notes - search all notes ")
 		fmt.Println("rep <day1> <day2>  -replacing reg from day1 to day2");
 		fmt.Println("restore -restoring a database from an archive");
 		fmt.Println("zone <number zone> -print zone objects");
@@ -686,7 +698,7 @@ func writeData(fileName string){
 			}
 		 if countSearch>1 && result {
 			fmt.Println("enter index object");
-			n=tools.ReadInt();}
+			n=tools.ReadIntRange(0,len(gData.MyObjects)-1);}
 		return n;
 		}
 
@@ -721,6 +733,10 @@ func setAllObjects(){
 				if  gData.Reglament[ob][data]==1 { 
 					u:=fmt.Sprintf("%.2f",gData.MyObjects[ob].Ust) 
 					fmt.Println(n,gData.MyObjects[ob].Name," ",gData.MyObjects[ob].Adress," Z",gData.MyObjects[ob].Zone," U",u," I",ob);
+					if gData.MyObjects[ob].Note !=""{
+						fmt.Println("note -",gData.MyObjects[ob].Note)
+						}
+					
 					sum+=gData.MyObjects[ob].Ust/float64 (gData.MyObjects[ob].RegInMonth);
 					typeLine();
 					n++;
@@ -958,7 +974,7 @@ func findArhive(m int, y int) error {
 			 if err !=nil{
 				 fmt.Println(err)
 				 } else {
-					 fmt.Println(i+1,data)
+					 fmt.Println(i+1,data) // i+1 это сдвиг чтобы счет шел с 1 а не с нуля при отображении
 					 }
 				 
 			 number=i
@@ -973,10 +989,10 @@ func findArhive(m int, y int) error {
 		 
 	 if countresult>1{
 		 	fmt.Println("enter number file");
-			number=tools.ReadIntRange(1,len(lst))			
+			number=tools.ReadIntRange(1,len(lst)) -1	// для чтения сдвигаем обратно		
 	
 	}
-	fileArhive=filesDir+"/"+lst[number-1].Name()
+	fileArhive=filesDir+"/"+lst[number].Name()
 	readData(fileArhive);
 	return nil
 }
@@ -998,3 +1014,45 @@ func formatFileInfo(entry fs.DirEntry) (string, error) {
 
 	return result, nil
 }
+
+func editNote(ind int){
+	typeLine()
+	
+	s:=1
+	for s !=0 {
+		fmt.Println("note for ",gData.MyObjects[ind].Name)
+	    note := gData.MyObjects[ind].Note
+	    fmt.Println(note)
+		fmt.Println("1 -add note")
+		fmt.Println("2 -replace note")
+		fmt.Println("3 -delete note")
+		fmt.Println("0 -exit")
+		s = tools.ReadIntRange(0,3)
+		switch s {
+			case 1: fmt.Println("type note for ",gData.MyObjects[ind].Name)
+			        note2:=tools.St()
+			        note+=note2
+			        
+			case 2: fmt.Println("type note for ",gData.MyObjects[ind].Name)
+			        note2:=tools.St()
+			        note=note2
+			        
+			case 3: note=""
+			}
+		gData.MyObjects[ind].Note = note
+		writeData(fileData)	
+		}
+typeLine()		
+}
+
+func typeNotes(){
+	typeLine()
+	for _,ob :=range (gData.MyObjects) {
+		if ob.Note !="" {
+			fmt.Println(ob.Name,ob.Adress)
+			fmt.Println("note-",ob.Note)
+			typeLine()
+			}
+		}
+	
+	}
