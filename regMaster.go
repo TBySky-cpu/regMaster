@@ -319,6 +319,10 @@ func comandLine(){
 						typeAll();
 						err=false;
 						}
+					case  "obsf": {
+						writeToFile()
+						err=false;
+						}	
 					case "restore": {
 					restore();
 					err=false;
@@ -449,7 +453,7 @@ func comandLine(){
 func checkComand(s string) bool {
 		b:=false;
 		
-		 mainComand:= []string{"q","add","check","menu","help","exit","rep","obs",
+		 mainComand:= []string{"q","add","check","menu","help","exit","rep","obs","obsf",
 			                   "grk","greg","gust","del","arhr","arhs","ed","restore","zone","newmonth","arh","note","notes"};
 		parts:=strings.Split(s," ")
 		
@@ -475,6 +479,7 @@ func typeHelp(){
 		fmt.Println("menu   -mode with menu");
 		fmt.Println("<name object>  - type data for the object");
 		fmt.Println("obs  -type all objects");
+		fmt.Println("obsf  -type all objects in file");
 		fmt.Println("grk-type grafik");
 		fmt.Println("greg-type regl and grafik");
 		fmt.Println("gust-type grafik and usl ust");
@@ -1055,4 +1060,52 @@ func typeNotes(){
 			}
 		}
 	
+	}
+
+
+func getMaxLen() (int,int){
+	maxName:=0
+	maxAdress:=0
+	for _,ob :=range (gData.MyObjects){
+		nameLen := len([]rune(ob.Name))
+		adrLen:=  len([]rune(ob.Adress))
+        if nameLen > maxName {
+			maxName = nameLen
+			
+			}
+		if adrLen > maxAdress {
+			maxAdress = adrLen
+			
+			}
+		}
+	return maxName,maxAdress	
+	}
+	
+func writeToFile() {
+	n:=1
+	ds:=strconv.Itoa(day);
+	  if day<10 {
+		  ds ="0"+strconv.Itoa(day);
+	  }
+	ms:=strconv.Itoa(monthN);
+	  if monthN<10 {
+		  ms="0"+strconv.Itoa(monthN);
+		  }
+	filename:="objects"+ds+ms+strconv.Itoa(year)+".txt"
+	
+	file, err := os.Create(filename)
+    if err != nil {
+        fmt.Println(err)
+        return 
+    }
+    defer file.Close()
+	maxName,maxAdress:=getMaxLen()
+	maxName+=2
+	maxAdress+=2
+	for _,ob :=range (gData.MyObjects){
+		fmt.Fprintf(file,"%3d %-*s %-*s %3d %5.1f\n",n,maxName,ob.Name,maxAdress,ob.Adress,ob.Zone,ob.Ust)
+		n++
+    }
+    fmt.Println("data written to file ",filename)
+	return 
 	}

@@ -8,7 +8,9 @@
     "strconv"  
     "regMaster/tools"
     "io/ioutil"
+    "io/fs"
     "encoding/json"
+    "errors"
     )
 
  type myObject struct{
@@ -18,15 +20,17 @@
 	Ust float64;
 	RegInMonth int;
 	Index int
+	Note  string
 	}
 	
 type dataReg struct {
-	Month int
-	FirstDay int
+	Month        int
+	FirstDay     int
+	Year         int
 	TotalObjects int
-	MyObjects []myObject
-	Grafik [32]int
-	Reglament [][]int
+	MyObjects    []myObject
+	Grafik [32]  int
+	Reglament    [][]int
 	}	
 
 
@@ -36,7 +40,7 @@ type dataReg struct {
 	  modeMenu,
 	  modeComand,
 	  mode int
-var  arhive bool
+var   arhive bool
 var	  fileData, //= "data.dpm";
 	  filesDir,//,="arhive";
 	  fileArhive string
@@ -58,8 +62,8 @@ var   gData dataReg
 	  year=calendar.Year()
 	  initr()  
 	  typeLine();         
-	  fmt.Println("*      RegMaster v.6.0      *");
-	  fmt.Println("*Takhir Bairashevski apr2025*");
+	  fmt.Println("*      RegMaster v.7.0      *");
+	  fmt.Println("*Takhir Bairashevski aug2025*");
 	  typeLine();
 	  fmt.Println("Today ",day,monthN,year);
 	  
@@ -225,8 +229,10 @@ func comandLine(){
 		for work {
 			err=true;
 			if arhive {
+				typeLine()
 				fmt.Println("**working in arhive -",fileArhive)
-			    } 
+				fmt.Println("archive for",tools.GetMonth(gData.Month),gData.Year)
+				} 
 			fmt.Print("> ");
 			str1=tools.St();
 			str=strings.Trim(str1, " ")
@@ -238,7 +244,7 @@ func comandLine(){
 					if err==nil{ //  и если это число  
 						regByDay(d) // показываем день
 						} else { // иначе
-							_=search(str);// ищем объект
+							_=search(str,false);// ищем объект
 							}
 			
 				} else {  // если это команда то обрабатываем ее
@@ -249,7 +255,9 @@ func comandLine(){
 					case "exit": {
 						err=false;
 					    work=false
-					}
+					    }
+					case "notes" : typeNotes()
+					               err = false
 					case "newmonth": {
 						err=false;
 					    fmt.Println("all data will be overwritten.Continue ? 1-yes");
@@ -321,13 +329,21 @@ func comandLine(){
              if len(parts)==2 {
 				switch parts[0] {
 					
-				     case "zone": {
+				    case "note" :{
+						ind=search(parts[1],true)
+						if ind >-1 {
+							editNote(ind)
+							err=false
+							}
+						}
+				    
+				    case "zone": {
 						typeZone(tools.ToInt(parts[1]));
 						err=false;
 						}
 			
 					case "del" :{
-						 ind =search(parts[1]);
+						 ind =search(parts[1],true);
 						 if  ind>-1  {
 							 delObject(ind);
 							 err=false;}
@@ -336,6 +352,21 @@ func comandLine(){
 				} 
 			   if len(parts)==3 {
 				switch parts[0] {
+					case "arh" :{
+						err =false
+						m:=tools.ToInt(parts[1]);
+						y:=tools.ToInt(parts[2]);
+						err:=findArhive(m,y)
+						if err == nil { 
+							arhive=true;
+							comandLine();
+							arhive=false;
+						} else {
+							fmt.Println(err)
+							readData(fileData)
+							} 
+						}
+					
 					case "rep" :{
 						d1=tools.ToInt(parts[1]);
 						d2=tools.ToInt(parts[2]);
@@ -351,7 +382,7 @@ func comandLine(){
 									setAllObjects();
 									err=false;
 								} else {
-									 ind=search(parts[2]);
+									 ind=search(parts[2],true);
 							          if ind>-1 {
 										  setObject(ind) 
 										  err=false;
@@ -368,7 +399,7 @@ func comandLine(){
 									}
 									err=false;
 								} else { 
-									ind=search(parts[2]);
+									ind=search(parts[2],true);
 									 if (ind>-1) {
 											setReglament(ind);
 											err=false;
@@ -390,7 +421,8 @@ func comandLine(){
 										}
 							         err=false;
 							         }	
-								}						
+								}
+														
 							}
 					if (arhive){
 						 writeData(fileArhive);
@@ -418,7 +450,7 @@ func checkComand(s string) bool {
 		b:=false;
 		
 		 mainComand:= []string{"q","add","check","menu","help","exit","rep","obs",
-			                   "grk","greg","gust","del","arhr","arhs","ed","restore","zone","newmonth"};
+			                   "grk","greg","gust","del","arhr","arhs","ed","restore","zone","newmonth","arh","note","notes"};
 		parts:=strings.Split(s," ")
 		
 		s1:=parts[0];
@@ -433,9 +465,11 @@ func checkComand(s string) bool {
 
 func typeHelp(){
 		fmt.Println("add -add object");
+		fmt.Println("arh <month> <year>  - find and read arhive file");
 		fmt.Println("arhr -read arhive file");
 		fmt.Println("arhs -save in arhive");
 		fmt.Println("check   -data base check");
+		fmt.Println("<day> -type data for the day");
 		fmt.Println("del <name object> -delete object");
 		fmt.Println("help -type this help");
 		fmt.Println("menu   -mode with menu");
@@ -451,10 +485,12 @@ func typeHelp(){
 		fmt.Println("ed gr all -edit all grafik");
 		fmt.Println("ed gr <day>  -edit one day");
 		fmt.Println("newmonth  -entering data for a new month");
+		fmt.Println("note <object> - entering a note for an object ")
+		fmt.Println("notes - search all notes ")
 		fmt.Println("rep <day1> <day2>  -replacing reg from day1 to day2");
 		fmt.Println("restore -restoring a database from an archive");
 		fmt.Println("zone <number zone> -print zone objects");
-		}	
+}	
 	
 func typeUst(){
 	fmt.Println("type Ust")
@@ -637,7 +673,7 @@ func writeData(fileName string){
     fmt.Println("write Done.")
 	}
 	
- func search(s string) int {
+ func search(s string, result bool) int {
 	   	
 	   	countSearch:=0;
 	   	n:=-1;
@@ -660,9 +696,9 @@ func writeData(fileName string){
 		 if n==-1 {
 			 fmt.Println("not found ",s)
 			}
-		 if (countSearch>1) {
+		 if countSearch>1 && result {
 			fmt.Println("enter index object");
-			n=tools.ReadInt();}
+			n=tools.ReadIntRange(0,len(gData.MyObjects)-1);}
 		return n;
 		}
 
@@ -697,6 +733,10 @@ func setAllObjects(){
 				if  gData.Reglament[ob][data]==1 { 
 					u:=fmt.Sprintf("%.2f",gData.MyObjects[ob].Ust) 
 					fmt.Println(n,gData.MyObjects[ob].Name," ",gData.MyObjects[ob].Adress," Z",gData.MyObjects[ob].Zone," U",u," I",ob);
+					if gData.MyObjects[ob].Note !=""{
+						fmt.Println("note -",gData.MyObjects[ob].Note)
+						}
+					
 					sum+=gData.MyObjects[ob].Ust/float64 (gData.MyObjects[ob].RegInMonth);
 					typeLine();
 					n++;
@@ -770,7 +810,7 @@ func setAllGrafik(){
 		 year=tools.ReadInt();
 		  fut:= time.Date(year,time.Month(gData.Month+1),1,1,1,1,1, time.Local)
 		  gData.FirstDay=int(fut.Weekday())+1
-		
+		  gData.Year = year 
 		  for i:=1;i<len(gData.Grafik);i++ {
 			  editOne(i);
 		    }
@@ -820,7 +860,7 @@ func getFile(dir string) string {
 	 }		
 		
 	fmt.Println("Enter number file ");
-	nf:=tools.ReadInt();
+	nf:=tools.ReadIntRange(1,len(lst));
 	return lst[nf-1].Name();
 	
 	}
@@ -905,3 +945,114 @@ func replaceDays(d1,d2 int){
 				 writeData(fileData);
 			 }
 		}
+		
+func findArhive(m int, y int) error {
+	
+	if m < 1 || m > 12 {
+        return errors.New("month must be between 1 and 12")
+    }
+    if y < 2023 {
+        return errors.New("year must be 2023 or later")
+    }
+    
+    lst, err := os.ReadDir(filesDir)
+	
+	if err != nil {
+		return errors.New("can.t open  dir "+filesDir)
+	}
+	
+	countresult:=0
+	number:=0
+	
+	for i:=0;i<len(lst);i++{
+	 if lst[i].IsDir()==false {
+		  fileArhive=filesDir+"/"+lst[i].Name()
+	      readData(fileArhive);
+	      if gData.Month +1  ==m && gData.Year == y {
+			
+			 data,err:=formatFileInfo(lst[i])
+			 if err !=nil{
+				 fmt.Println(err)
+				 } else {
+					 fmt.Println(i+1,data) // i+1 это сдвиг чтобы счет шел с 1 а не с нуля при отображении
+					 }
+				 
+			 number=i
+			 countresult++
+			  }
+		 }
+	 }
+	 	 
+	 if countresult==0 {
+		 return errors.New("no arhive for "+strconv.Itoa(m)+" "+strconv.Itoa(y))	
+		 }
+		 
+	 if countresult>1{
+		 	fmt.Println("enter number file");
+			number=tools.ReadIntRange(1,len(lst)) -1	// для чтения сдвигаем обратно		
+	
+	}
+	fileArhive=filesDir+"/"+lst[number].Name()
+	readData(fileArhive);
+	return nil
+}
+	 	
+			
+func formatFileInfo(entry fs.DirEntry) (string, error) {
+	// Получаем детальную информацию о файле
+	info, err := entry.Info()
+	if err != nil {
+		return "", err
+	}
+
+	// Получаем время изменения
+	modTime := info.ModTime()
+
+	// Форматируем строку: "ИмяФайла - ДД.ММ.ГГГГ ЧЧ:ММ"
+	formattedTime := modTime.Format("02.01.2006 15:04")
+	result := fmt.Sprintf("%s - %s", entry.Name(), formattedTime)
+
+	return result, nil
+}
+
+func editNote(ind int){
+	typeLine()
+	
+	s:=1
+	for s !=0 {
+		fmt.Println("note for ",gData.MyObjects[ind].Name)
+	    note := gData.MyObjects[ind].Note
+	    fmt.Println(note)
+		fmt.Println("1 -add note")
+		fmt.Println("2 -replace note")
+		fmt.Println("3 -delete note")
+		fmt.Println("0 -exit")
+		s = tools.ReadIntRange(0,3)
+		switch s {
+			case 1: fmt.Println("type note for ",gData.MyObjects[ind].Name)
+			        note2:=tools.St()
+			        note+=note2
+			        
+			case 2: fmt.Println("type note for ",gData.MyObjects[ind].Name)
+			        note2:=tools.St()
+			        note=note2
+			        
+			case 3: note=""
+			}
+		gData.MyObjects[ind].Note = note
+		writeData(fileData)	
+		}
+typeLine()		
+}
+
+func typeNotes(){
+	typeLine()
+	for _,ob :=range (gData.MyObjects) {
+		if ob.Note !="" {
+			fmt.Println(ob.Name,ob.Adress)
+			fmt.Println("note-",ob.Note)
+			typeLine()
+			}
+		}
+	
+	}

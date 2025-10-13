@@ -58,6 +58,22 @@ func ReadInt() int{
 	return e
 }
 
+func ReadIntRange(min int, max int) int{
+	number:=0
+	r:=true
+			for r {
+				number=ReadInt();
+				if number>= min && number <= max {
+					r=false
+					} else {
+						fmt.Println("enter a number from ",min, "to", max)
+						
+					}
+			
+			}
+	return number		
+	}
+
 
 func ToFloat(st string) float64{
 	var  x float64 =-1.0;
