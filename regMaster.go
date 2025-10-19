@@ -1,8 +1,10 @@
   package main
  import(
+     "bufio"
     "fmt"
     "log"
     "os"
+    "os/exec"
     "strings"
     "time"
     "strconv"  
@@ -43,6 +45,7 @@ type dataReg struct {
 var   arhive bool
 var	  fileData, //= "data.dpm";
 	  filesDir,//,="arhive";
+	  filesTxt, // "datatxt"
 	  fileArhive string
 
 var   calendar time.Time
@@ -57,13 +60,14 @@ var   gData dataReg
 	 calendar=time.Now()
 	  fileData="data.bin"
 	  filesDir="arhive"
+	  filesTxt="filestxt"
 	  day=calendar.Day()
 	  monthN= int(calendar.Month())
 	  year=calendar.Year()
 	  initr()  
 	  typeLine();         
-	  fmt.Println("*      RegMaster v.7.0      *");
-	  fmt.Println("*Takhir Bairashevski aug2025*");
+	  fmt.Println("*      RegMaster v.7.1      *");
+	  fmt.Println("*Takhir Bairashevski oct2025*");
 	  typeLine();
 	  fmt.Println("Today ",day,monthN,year);
 	  
@@ -90,8 +94,8 @@ var   gData dataReg
 func initr(){
 	  
 	  v:=0;
-	  exists := tools.ExistFile(fileData);
-      if (!exists) {
+	exists := tools.ExistFile(fileData);
+	   if !exists {
 		  
           fmt.Println("File doesn't exist!!  "+fileData);
 		  fmt.Println("Create ? 1-yes other-no");
@@ -111,7 +115,25 @@ func initr(){
 		readData(fileData)
 		
 		}
-	}	 
+		
+	exists,isDir := tools.Exists(filesDir)
+	if !exists ||  !isDir {
+		er:=os.Mkdir(filesDir, 0755)
+		if er !=nil {
+			fmt.Println(er)
+			}
+		} 
+	exists,isDir = tools.Exists(filesTxt)
+	if !exists ||  !isDir {
+		er:=os.Mkdir(filesTxt, 0755)
+		if er !=nil {
+			fmt.Println(er)
+			}
+		}	
+			
+	}
+		
+		 
  
 func makeArray(){
 	gData.MyObjects=make([]myObject,gData.TotalObjects)
@@ -279,6 +301,13 @@ func comandLine(){
 					 veryfy();
 					  err=false;
 					}
+					
+					case "clear": {
+					 clearConsole()
+					  err=false;
+					}
+					
+	 
 					case "menu": {
 						mode=modeMenu;
 						//mainMenu();
@@ -327,6 +356,11 @@ func comandLine(){
 					restore();
 					err=false;
 					}
+				   case "readreg": {
+					readTxt();
+					err=false;
+					}
+					
 				}
 				} 
 			  
@@ -453,8 +487,8 @@ func comandLine(){
 func checkComand(s string) bool {
 		b:=false;
 		
-		 mainComand:= []string{"q","add","check","menu","help","exit","rep","obs","obsf",
-			                   "grk","greg","gust","del","arhr","arhs","ed","restore","zone","newmonth","arh","note","notes"};
+		 mainComand:= []string{"q","add","check","menu","help","exit","rep","obs","obsf","clear",
+			                   "grk","greg","gust","del","arhr","arhs","ed","restore","readreg","zone","newmonth","arh","note","notes"};
 		parts:=strings.Split(s," ")
 		
 		s1:=parts[0];
@@ -473,6 +507,7 @@ func typeHelp(){
 		fmt.Println("arhr -read arhive file");
 		fmt.Println("arhs -save in arhive");
 		fmt.Println("check   -data base check");
+		fmt.Println("clear - clear console");
 		fmt.Println("<day> -type data for the day");
 		fmt.Println("del <name object> -delete object");
 		fmt.Println("help -type this help");
@@ -492,6 +527,7 @@ func typeHelp(){
 		fmt.Println("newmonth  -entering data for a new month");
 		fmt.Println("note <object> - entering a note for an object ")
 		fmt.Println("notes - search all notes ")
+		fmt.Println("readreg - read reglament from txt file ")
 		fmt.Println("rep <day1> <day2>  -replacing reg from day1 to day2");
 		fmt.Println("restore -restoring a database from an archive");
 		fmt.Println("zone <number zone> -print zone objects");
@@ -850,7 +886,7 @@ func typeDays(){
 
 
 func getFile(dir string) string {
-	lst, err := ioutil.ReadDir(filesDir)
+	lst, err := ioutil.ReadDir(dir)
 	
 	if err != nil {
 		//panic(err)
@@ -1082,7 +1118,7 @@ func getMaxLen() (int,int){
 	}
 	
 func writeToFile() {
-	n:=1
+	
 	ds:=strconv.Itoa(day);
 	  if day<10 {
 		  ds ="0"+strconv.Itoa(day);
@@ -1091,7 +1127,7 @@ func writeToFile() {
 	  if monthN<10 {
 		  ms="0"+strconv.Itoa(monthN);
 		  }
-	filename:="objects"+ds+ms+strconv.Itoa(year)+".txt"
+	filename:=filesTxt+"/"+"objects"+ds+ms+strconv.Itoa(year)+".txt"
 	
 	file, err := os.Create(filename)
     if err != nil {
@@ -1102,10 +1138,103 @@ func writeToFile() {
 	maxName,maxAdress:=getMaxLen()
 	maxName+=2
 	maxAdress+=2
-	for _,ob :=range (gData.MyObjects){
-		fmt.Fprintf(file,"%3d %-*s %-*s %3d %5.1f\n",n,maxName,ob.Name,maxAdress,ob.Adress,ob.Zone,ob.Ust)
-		n++
+	
+	fmt.Fprintf(file,"%3s %-*s %-*s %3s %5s %2s","I",maxName,"Name",maxAdress,"Adress","Z","U","R")
+	for i:=0;i<32;i++ {
+		fmt.Fprintf(file,"%3d",i)
+		}
+		
+	fmt.Fprintf(file,"%2s\n"," ")
+		
+	fmt.Fprintf(file,"%3s %-*s %-*s %3s %5s %2s","I",maxName,"Name",maxAdress,"Adress","Z","U","R")
+	for _,gr:=range(gData.Grafik){
+		fmt.Fprintf(file,"%3d",gr)
+		}
+	fmt.Fprintf(file,"%2s\n"," ")	
+		
+	for i,ob :=range (gData.MyObjects){
+		fmt.Fprintf(file,"%3d %-*s %-*s %3d %5.1f %2s",i,maxName,ob.Name,maxAdress,ob.Adress,ob.Zone,ob.Ust,"R")
+		for _,d:=range (gData.Reglament[i]){
+			fmt.Fprintf(file,"%3d",d)
+			}
+		fmt.Fprintf(file,"%2s\n"," ")	
+		
     }
     fmt.Println("data written to file ",filename)
 	return 
 	}
+
+ func clearConsole(){
+	 cmd := exec.Command("clear")
+     cmd.Stdout = os.Stdout
+      cmd.Run()
+	}
+
+func checkTxt(d []string) bool {
+	return true
+	}
+
+func readTxt(){
+	nr:=0
+	fmt.Println("read a database from a txt file ?");
+	fmt.Println("1-continue 0-cancel");
+	nf:=tools.ReadInt();
+	if nf !=1{
+		return
+		}
+	name:=getFile(filesTxt)
+	if name=="error"{
+		return 
+		}
+		
+	
+	name=filesTxt+"/"+name	
+	var data []string;
+	
+	
+	file, err:= os.Open(name)
+    scanner := bufio.NewScanner(file)
+      if err != nil {
+        fmt.Println(err)
+        }
+        
+	for scanner.Scan(){
+		data=append(data,scanner.Text())
+	}
+	
+	if checkTxt(data) {
+		parts:=strings.Fields(data[1])
+		for g:=0;g<len(parts);g++{
+			if parts[g]=="R"{
+				nr=g+1}
+			}
+				
+		fmt.Println(nr)
+				
+				
+		for g:=nr;g<len(parts);g++{
+			d:=tools.ToInt(parts[g])
+			if d !=-1  && g-nr < len(gData.Grafik){
+				gData.Grafik[g-nr] = d
+				}
+			
+			
+			}		
+		fmt.Println(gData.Grafik)
+		
+		ob:=0
+		for i:=2;i<len(data);i++{
+			parts:=strings.Fields(data[i])
+		    for r:=nr;r<len(parts);r++{
+				reg:=tools.ToInt(parts[r])
+				if reg != -1 && ob<len(gData.MyObjects) && r-nr<len(gData.Reglament[ob]) {
+					
+					gData.Reglament[ob][r-nr]=reg
+					}
+				
+				}
+		ob++
+	    }
+		
+}
+}

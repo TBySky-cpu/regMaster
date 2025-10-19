@@ -168,6 +168,18 @@ func ExistFile(path string) bool{
 	 defer file.Close()   
 	 return b	
 	}
+	
+func Exists(path string) (exists bool, isDir bool) {
+	info, err := os.Stat(path)
+	if os.IsNotExist(err) {
+		return false, false
+	}
+	if err != nil {
+		// Ошибка доступа (например, нет прав)
+		return false, false
+	}
+	return true, info.IsDir()
+}	
 
  func UstToInt(u float64) int{
 		i:= int(u*100);
