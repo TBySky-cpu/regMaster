@@ -1139,21 +1139,22 @@ func writeToFile() {
 	maxName+=2
 	maxAdress+=2
 	
-	fmt.Fprintf(file,"%3s %-*s %-*s %3s %5s %2s","I",maxName,"Name",maxAdress,"Adress","Z","U","R")
+	fmt.Fprintf(file,"%4d %-*d %-*d %3d %5s %2s %2s",gData.TotalObjects, maxName,gData.Month+1, maxAdress,gData.Year, gData.FirstDay,"U","K","R")
 	for i:=0;i<32;i++ {
 		fmt.Fprintf(file,"%3d",i)
 		}
 		
 	fmt.Fprintf(file,"%2s\n"," ")
 		
-	fmt.Fprintf(file,"%3s %-*s %-*s %3s %5s %2s","I",maxName,"Name",maxAdress,"Adress","Z","U","R")
+	fmt.Fprintf(file,"%4s %-*s %-*s %3s %5s %2s %2s","I",maxName,"Name",maxAdress,"Adress","Z","U","K","R")
 	for _,gr:=range(gData.Grafik){
 		fmt.Fprintf(file,"%3d",gr)
 		}
 	fmt.Fprintf(file,"%2s\n"," ")	
 		
 	for i,ob :=range (gData.MyObjects){
-		fmt.Fprintf(file,"%3d %-*s %-*s %3d %5.1f %2s",i,maxName,ob.Name,maxAdress,ob.Adress,ob.Zone,ob.Ust,"R")
+		ui:=tools.UstToInt(ob.Ust)
+		fmt.Fprintf(file,"%4d %-*s %-*s %3d %5d %2d %2s",i,maxName,ob.Name,maxAdress,ob.Adress,ob.Zone,ui,ob.RegInMonth,"R")
 		for _,d:=range (gData.Reglament[i]){
 			fmt.Fprintf(file,"%3d",d)
 			}
@@ -1164,15 +1165,67 @@ func writeToFile() {
 	return 
 	}
 
+
  func clearConsole(){
 	 cmd := exec.Command("clear")
      cmd.Stdout = os.Stdout
       cmd.Run()
 	}
 
+
+/////////////////
+
 func checkTxt(d []string) bool {
-	return true
+	kol:=len(d)-2
+	parts:=strings.Fields(d[0])
+	count:=tools.ToInt(parts[0])
+	if count == -1 {
+		return false
+		}
+	month:=	tools.ToInt(parts[1])
+	if month ==-1 {
+		return false
+		}
+		
+	
+	year:=tools.ToInt(parts[2])
+	if year ==-1 {
+		return false
+		}
+	fd:=tools.ToInt(parts[3])
+	if fd ==-1 {
+		return false
+		}	
+	
+	fmt.Println("data for ",month,".",year)
+	fmt.Println("number of objects	",kol)
+	if len(parts) != 39 {
+		fmt.Println("error - column mismatch")
+		}
+		
+	
+	if kol != count {
+		fmt.Println("error - quantity discrepancy",count,"<>",kol)
+		
+	} 	
+	
+	if kol != gData.TotalObjects {
+		fmt.Println("this file contains a different number of objects")
 	}
+		
+	fmt.Println("1-continue 0-cancel");
+	nf:=tools.ReadInt();
+	if nf !=1{
+		return false
+	}
+		
+	gData.TotalObjects = kol
+	makeArray()
+	gData.Month = month
+	gData.Year = year
+	gData.FirstDay = fd
+	return true
+    }
 
 func readTxt(){
 	nr:=0
@@ -1201,7 +1254,7 @@ func readTxt(){
 	for scanner.Scan(){
 		data=append(data,scanner.Text())
 	}
-	
+	// data[1] -grahik
 	if checkTxt(data) {
 		parts:=strings.Fields(data[1])
 		for g:=0;g<len(parts);g++{
@@ -1209,22 +1262,35 @@ func readTxt(){
 				nr=g+1}
 			}
 				
-		fmt.Println(nr)
+		
 				
-				
-		for g:=nr;g<len(parts);g++{
+		// read grafik		
+		for g:=nr;g<len(parts);g++{ 
 			d:=tools.ToInt(parts[g])
 			if d !=-1  && g-nr < len(gData.Grafik){
 				gData.Grafik[g-nr] = d
 				}
-			
-			
-			}		
-		fmt.Println(gData.Grafik)
+		}		
+		//fmt.Println(gData.Grafik)
 		
 		ob:=0
 		for i:=2;i<len(data);i++{
 			parts:=strings.Fields(data[i])
+			gData.MyObjects[ob].Name = parts[1]
+			gData.MyObjects[ob].Adress = parts[2]
+			z:=tools.ToInt(parts[3])
+			if z !=-1 {
+				gData.MyObjects[ob].Zone = z
+				}
+			u:=tools.ToInt(parts[4])
+			if u !=-1 {
+				gData.MyObjects[ob].Ust = tools.UstToFloat(u)
+				}
+			k:=	tools.ToInt(parts[5])
+			if k !=-1 {
+				gData.MyObjects[ob].RegInMonth = k
+				}
+				
 		    for r:=nr;r<len(parts);r++{
 				reg:=tools.ToInt(parts[r])
 				if reg != -1 && ob<len(gData.MyObjects) && r-nr<len(gData.Reglament[ob]) {
@@ -1235,6 +1301,8 @@ func readTxt(){
 				}
 		ob++
 	    }
+	fmt.Println("reading completed successfully")
+	writeData(fileData)	
 		
-}
+      }
 }
